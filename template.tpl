@@ -242,11 +242,16 @@ const BigQuery = require('BigQuery');
 ==============================================================================*/
 
 const traceId = getRequestHeader('trace-id');
+const eventData = getAllEventData();
 
-let storeUrl = getStoreUrl();
-let writeUrl = getWriteUrl(data.documentKey || generateDocumentKey());
-let method = data.storeMerge ? 'PATCH' : 'PUT';
-let input = data.addEventData ? getAllEventData() : {};
+const url = eventData.page_location || getRequestHeader('referer');
+if (url && url.lastIndexOf('https://gtm-msr.appspot.com/', 0) === 0) {
+  return data.gtmOnSuccess();
+}
+
+const writeUrl = getWriteUrl(data.documentKey || generateDocumentKey());
+const method = data.storeMerge ? 'PATCH' : 'PUT';
+const input = data.addEventData ? eventData : {};
 
 if (data.addTimestamp) input[data.timestampFieldName] = getTimestampMillis();
 if (data.customDataList) {
@@ -300,7 +305,7 @@ sendHttpRequest(
 
     data.gtmOnSuccess();
   },
-  function () {
+  () => {
     log({
       Name: 'StapeStore',
       Type: 'Response',
@@ -336,6 +341,7 @@ function getStoreUrl() {
 }
 
 function getWriteUrl(documentKey) {
+  const storeUrl = getStoreUrl();
   return storeUrl + '/' + enc(documentKey);
 }
 
@@ -512,6 +518,21 @@ ___SERVER_PERMISSIONS___
                   {
                     "type": 1,
                     "string": "x-gtm-api-key"
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "headerName"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "referer"
                   }
                 ]
               }
