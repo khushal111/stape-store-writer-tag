@@ -24,7 +24,8 @@ if (url && url.lastIndexOf('https://gtm-msr.appspot.com/', 0) === 0) {
   return data.gtmOnSuccess();
 }
 
-const writeUrl = getWriteUrl(data.documentKey || generateDocumentKey());
+const documentId = data.documentKey || generateDocumentId();
+const documentUrl = getDocumentUrl(data, documentId);
 const method = data.storeMerge ? 'PATCH' : 'PUT';
 const input = data.addEventData ? eventData : {};
 
@@ -58,12 +59,12 @@ log({
   TraceId: traceId,
   EventName: 'Store',
   RequestMethod: method,
-  RequestUrl: writeUrl,
+  RequestUrl: documentUrl,
   RequestBody: input
 });
 
 sendHttpRequest(
-  writeUrl,
+  documentUrl,
   { method: method, headers: { 'Content-Type': 'application/json' } },
   JSON.stringify(input)
 ).then(
@@ -99,10 +100,11 @@ sendHttpRequest(
   Vendor related functions
 ==============================================================================*/
 
-function getStoreUrl() {
+function getStoreBaseUrl(data) {
   const containerIdentifier = getRequestHeader('x-gtm-identifier');
   const defaultDomain = getRequestHeader('x-gtm-default-domain');
   const containerApiKey = getRequestHeader('x-gtm-api-key');
+  const collectionPath = 'collections/' + enc(data.collectionName || 'default') + '/documents';
 
   return (
     'https://' +
@@ -111,16 +113,17 @@ function getStoreUrl() {
     enc(defaultDomain) +
     '/stape-api/' +
     enc(containerApiKey) +
-    '/v1/store'
+    '/v2/store/' +
+    collectionPath
   );
 }
 
-function getWriteUrl(documentKey) {
-  const storeUrl = getStoreUrl();
-  return storeUrl + '/' + enc(documentKey);
+function getDocumentUrl(data, documentId) {
+  const storeBaseUrl = getStoreBaseUrl(data);
+  return storeBaseUrl + '/' + enc(documentId);
 }
 
-function generateDocumentKey() {
+function generateDocumentId() {
   const rnd = makeString(generateRandom(1000000000, 2147483647));
 
   return 'store_' + makeString(getTimestampMillis()) + rnd;
