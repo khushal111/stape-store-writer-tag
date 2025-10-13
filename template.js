@@ -73,12 +73,12 @@ sendHttpRequest(
       Name: 'StapeStore',
       Type: 'Response',
       EventName: 'Store',
-      ResponseStatusCode: response.statusCode,
+      ResponseStatusCode: responseStatusCode,
       ResponseHeaders: {},
       ResponseBody: response.body
     });
 
-    if (responseStatusCode == 200) data.gtmOnSuccess();
+    if (responseStatusCode === 200) data.gtmOnSuccess();
     else data.gtmOnFailure();
   },
   (response) => {
