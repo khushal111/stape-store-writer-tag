@@ -14,6 +14,7 @@ ___INFO___
   "version": 1,
   "securityGroups": [],
   "displayName": "Stape Store Writer",
+  "categories": ["UTILITY", "DATA_WAREHOUSING", "ATTRIBUTION"],
   "brand": {
     "id": "github.com_stape-io",
     "displayName": "stape-io",
@@ -144,11 +145,11 @@ ___TEMPLATE_PARAMETERS___
         "selectItems": [
           {
             "value": true,
-            "displayValue": "True"
+            "displayValue": "true"
           },
           {
             "value": false,
-            "displayValue": "False"
+            "displayValue": "false"
           }
         ],
         "simpleValueType": true,
@@ -296,7 +297,6 @@ const BigQuery = require('BigQuery');
 /*==============================================================================
 ==============================================================================*/
 
-const traceId = getRequestHeader('trace-id');
 const eventData = getAllEventData();
 
 const url = eventData.page_location || getRequestHeader('referer');
@@ -336,7 +336,6 @@ if (data.customDataList) {
 log({
   Name: 'StapeStore',
   Type: 'Request',
-  TraceId: traceId,
   EventName: 'Store',
   RequestMethod: method,
   RequestUrl: documentUrl,
@@ -354,7 +353,6 @@ sendHttpRequest(
     log({
       Name: 'StapeStore',
       Type: 'Response',
-      TraceId: traceId,
       EventName: 'Store',
       ResponseStatusCode: response.statusCode,
       ResponseHeaders: {},
@@ -368,7 +366,6 @@ sendHttpRequest(
     log({
       Name: 'StapeStore',
       Type: 'Response',
-      TraceId: traceId,
       EventName: 'Store',
       ResponseStatusCode: response.statusCode,
       ResponseHeaders: {},
@@ -438,6 +435,10 @@ function isUIFieldTrue(field) {
   return [true, 'true', 1, '1'].indexOf(field) !== -1;
 }
 
+function isUIFieldTrue(field) {
+  return [true, 'true', 1, '1'].indexOf(field) !== -1;
+}
+
 function enc(data) {
   return encodeUriComponent(makeString(data || ''));
 }
@@ -446,6 +447,8 @@ function log(rawDataToLog) {
   const logDestinationsHandlers = {};
   if (determinateIsLoggingEnabled()) logDestinationsHandlers.console = logConsole;
   if (determinateIsLoggingEnabledForBigQuery()) logDestinationsHandlers.bigQuery = logToBigQuery;
+
+  rawDataToLog.TraceId = getRequestHeader('trace-id');
 
   const keyMappings = {
     // No transformation for Console is needed.
