@@ -1,4 +1,7 @@
-homepage: "https://stape.io/"
+homepage: 'https://stape.io/'
+documentation: 'https://github.com/stape-io/stape-store-writer-tag'
 versions:
+  - sha: 4a81fd82639c53ccd2e7105c3f825002f9512fde
+    changeNotes: Added Stape Store 2.0 support. Added BigQuery logging support.
   - sha: 4abc79e849b2b269203da78b1f9ad043f60caa8b
     changeNotes: Initial release.
